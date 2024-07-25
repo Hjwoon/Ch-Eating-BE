@@ -57,6 +57,12 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
 
         String token = jwtTokenProvider.createToken(user.getUserId(), roles);
-        return UserSignInResDto.builder().accessToken(token).build();
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+
+        return UserSignInResDto.builder()
+                .accessToken(token)
+                .refreshToken(refreshToken)
+                .build();
     }
+
 }

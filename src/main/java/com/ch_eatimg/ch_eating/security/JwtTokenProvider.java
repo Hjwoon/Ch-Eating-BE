@@ -34,6 +34,9 @@ public class JwtTokenProvider {
     @Value("${application.security.jwt.expiration}")
     private long validityInMilliseconds;
 
+    @Value("${application.security.jwt.refresh-expiration}")
+    private long refreshTokenValidityInMilliseconds;
+
     @PostConstruct
     protected void init() { secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());}
 
@@ -97,5 +100,18 @@ public class JwtTokenProvider {
             throw new RuntimeException("만료되었거나 유효하지 않은 JWT 토큰입니다.");
         }
     }
+
+    public String createRefreshToken(String username) {
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(getSignKey(secretKey), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
 }

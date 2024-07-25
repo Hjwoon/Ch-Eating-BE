@@ -54,16 +54,22 @@ public class User extends BaseEntity {
                 .userPhone(dto.getUserPhone())
                 .build();
 
-        List<UserRole> userRoles = dto.getUserRoles().stream()
-                .map(roleName -> roles.stream()
-                        .filter(role -> role.getRoleName().name().equals(roleName))
-                        .findFirst()
-                        .map(role -> new UserRole(null, user, role))
-                        .orElseThrow(() -> new IllegalArgumentException(roleName + "는 존재하지 않는 역할입니다.")))
+        List<UserRole> userRoles = dto.getUserRoles().isEmpty()
+                ? List.of(findRole(roles, "ROLE_CLIENT")) // Default to 'role_client' if no roles are provided
+                : dto.getUserRoles().stream()
+                .map(roleName -> findRole(roles, roleName))
                 .collect(Collectors.toList());
 
         user.userRoles = userRoles;
 
         return user;
+    }
+
+    private static UserRole findRole(List<Role> roles, String roleName) {
+        return roles.stream()
+                .filter(role -> role.getRoleName().name().equals(roleName))
+                .findFirst()
+                .map(role -> new UserRole(null, null, role))
+                .orElseThrow(() -> new IllegalArgumentException(roleName + "는 존재하지 않는 역할입니다."));
     }
 }
