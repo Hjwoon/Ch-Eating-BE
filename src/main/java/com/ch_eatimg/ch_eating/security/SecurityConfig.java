@@ -27,10 +27,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/users/signUp", "/api/users/signIn", "/api/users/isLogin").permitAll()
-                        .anyRequest().hasAnyAuthority("ROLE_CLIENT, ROLE_ADMIN")
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/api/users/signUp", "/api/users/signIn").permitAll()
+                        .anyRequest().hasAnyAuthority("ROLE_CLIENT")
                 )
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
