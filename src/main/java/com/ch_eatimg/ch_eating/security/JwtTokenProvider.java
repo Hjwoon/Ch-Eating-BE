@@ -1,6 +1,7 @@
 package com.ch_eatimg.ch_eating.security;
 
 import com.ch_eatimg.ch_eating.domain.Role;
+import com.ch_eatimg.ch_eating.domain.RoleName;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -26,8 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final MyUserDetails myUserDetails;
-
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
@@ -38,13 +37,16 @@ public class JwtTokenProvider {
     private long refreshTokenValidityInMilliseconds;
 
     @PostConstruct
-    protected void init() { secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());}
+    protected void init() {
+        // Ensure secret key is base64 encoded
+        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String createToken(String username, List<Role> roles) {
-
         Claims claims = Jwts.claims().setSubject(username);
+        // Map roles to role names (String)
         claims.put("auth", roles.stream()
-                .map(role -> role.getRoleName().getAuthority())
+                .map(role -> role.getRoleName().name()) // Convert Role to role name string
                 .collect(Collectors.toList()));
 
         Date now = new Date();
@@ -54,14 +56,15 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(getSignKey(secretKey), SignatureAlgorithm.HS256)
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String createRefreshToken(String username, List<Role> roles) {
         Claims claims = Jwts.claims().setSubject(username);
+        // Map roles to role names (String)
         claims.put("auth", roles.stream()
-                .map(role -> role.getRoleName().getAuthority())
+                .map(role -> role.getRoleName().name()) // Convert Role to role name string
                 .collect(Collectors.toList()));
 
         Date now = new Date();
@@ -71,12 +74,12 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(getSignKey(secretKey), SignatureAlgorithm.HS256)
+                .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    private Key getSignKey(String secretKey) {
-        byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+    private Key getSignKey() {
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -93,12 +96,11 @@ public class JwtTokenProvider {
     }
 
     public String getUsername(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSignKey(secretKey)).build().parseClaimsJws(token).getBody().getSubject();
+        return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody().getSubject();
     }
 
-    // 이 메소드 반환형 Claims
     public Claims getClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSignKey(secretKey)).build().parseClaimsJws(token).getBody();
+        return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
     }
 
     public String resolveToken(HttpServletRequest request) {
@@ -111,10 +113,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(getSignKey(secretKey)).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            throw new RuntimeException("만료되었거나 유효하지 않은 JWT 토큰입니다.");
+            return false; // Token is invalid
         }
     }
 }

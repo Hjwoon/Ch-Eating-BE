@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "ROLES")
@@ -23,7 +22,8 @@ public class Role {
     @Column(name = "role_name", nullable = false)
     private RoleName roleName;
 
+
     public static Role of(RoleName roleName) {
-        return new Role(null, roleName);
+        return new Role(null,roleName);
     }
 }

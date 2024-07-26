@@ -1,13 +1,16 @@
 package com.ch_eatimg.ch_eating.user.controller;
 
+import com.ch_eatimg.ch_eating.user.dto.UserInfoDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignInReqDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignInResDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignUpReqDto;
 import com.ch_eatimg.ch_eating.user.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,5 +33,11 @@ public class UserController {
     public ResponseEntity<?> signIn(@RequestBody @Valid UserSignInReqDto dto, HttpServletResponse response) {
         UserSignInResDto result = userService.signIn(dto, response);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/isLogin")
+    public ResponseEntity<UserInfoDto> checkLoginStatus(HttpServletRequest request) {
+        UserInfoDto userInfo = userService.getUserInfo(request);
+        return ResponseEntity.ok(userInfo);
     }
 }
