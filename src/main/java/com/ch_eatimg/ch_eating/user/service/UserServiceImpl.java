@@ -1,8 +1,6 @@
 package com.ch_eatimg.ch_eating.user.service;
 
-import com.ch_eatimg.ch_eating.domain.RoleName;
-import com.ch_eatimg.ch_eating.domain.User;
-import com.ch_eatimg.ch_eating.domain.UserRole;
+import com.ch_eatimg.ch_eating.domain.*;
 import com.ch_eatimg.ch_eating.role.RoleRepository;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
 import com.ch_eatimg.ch_eating.user.dto.UserSignInReqDto;
@@ -10,14 +8,15 @@ import com.ch_eatimg.ch_eating.user.dto.UserSignInResDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignUpReqDto;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
 import com.ch_eatimg.ch_eating.domain.Role;
+import jakarta.servlet.http.Cookie;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -50,19 +49,24 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserSignInResDto signIn(UserSignInReqDto dto) {
+    public UserSignInResDto signIn(UserSignInReqDto dto, HttpServletResponse response) {
         User user = userRepository.findByUserId(dto.getUserId()).orElseThrow(RuntimeException::new);
         List<Role> roles = user.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .collect(Collectors.toList());
 
-        String token = jwtTokenProvider.createToken(user.getUserId(), roles);
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId());
+        String accessToken = jwtTokenProvider.createToken(user.getUserId(), roles);
+        String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId(), roles);
+
+        // 쿠키에 Refresh Token 설정
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60); // 1주일
+        response.addCookie(cookie);
 
         return UserSignInResDto.builder()
-                .accessToken(token)
-                .refreshToken(refreshToken)
+                .accessToken(accessToken)
                 .build();
     }
-
 }

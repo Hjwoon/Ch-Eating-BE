@@ -4,6 +4,7 @@ import com.ch_eatimg.ch_eating.user.dto.UserSignInReqDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignInResDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignUpReqDto;
 import com.ch_eatimg.ch_eating.user.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +27,8 @@ public class UserController {
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> signIn(@RequestBody @Valid UserSignInReqDto dto) {
-        UserSignInResDto result = userService.signIn(dto);
+    public ResponseEntity<?> signIn(@RequestBody @Valid UserSignInReqDto dto, HttpServletResponse response) {
+        UserSignInResDto result = userService.signIn(dto, response);
         return ResponseEntity.ok(result);
     }
 }

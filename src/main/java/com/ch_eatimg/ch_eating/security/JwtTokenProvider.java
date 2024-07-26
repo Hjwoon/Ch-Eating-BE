@@ -58,6 +58,23 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    public String createRefreshToken(String username, List<Role> roles) {
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("auth", roles.stream()
+                .map(role -> role.getRoleName().getAuthority())
+                .collect(Collectors.toList()));
+
+        Date now = new Date();
+        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(validity)
+                .signWith(getSignKey(secretKey), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Key getSignKey(String secretKey) {
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
@@ -100,18 +117,4 @@ public class JwtTokenProvider {
             throw new RuntimeException("만료되었거나 유효하지 않은 JWT 토큰입니다.");
         }
     }
-
-    public String createRefreshToken(String username) {
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + refreshTokenValidityInMilliseconds);
-
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(getSignKey(secretKey), SignatureAlgorithm.HS256)
-                .compact();
-    }
-
-
 }
