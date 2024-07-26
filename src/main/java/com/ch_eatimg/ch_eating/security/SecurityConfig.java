@@ -29,8 +29,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/api/signUp", "/api/signIn", "/api/islogin").permitAll()
-                        .anyRequest().hasAnyAuthority("ROLE_ADMIN")
+                        .requestMatchers("/api/users/signUp", "/api/users/signIn", "/api/users/isLogin").permitAll()
+                        .anyRequest().hasAnyAuthority("ROLE_CLIENT, ROLE_ADMIN")
                 )
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();

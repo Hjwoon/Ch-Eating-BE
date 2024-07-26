@@ -1,6 +1,7 @@
 package com.ch_eatimg.ch_eating.user.service;
 
 import com.ch_eatimg.ch_eating.domain.*;
+import com.ch_eatimg.ch_eating.exception.TokenExpiredException;
 import com.ch_eatimg.ch_eating.role.RoleRepository;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
 import com.ch_eatimg.ch_eating.user.dto.UserInfoDto;
@@ -8,15 +9,12 @@ import com.ch_eatimg.ch_eating.user.dto.UserSignInReqDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignInResDto;
 import com.ch_eatimg.ch_eating.user.dto.UserSignUpReqDto;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
-import com.ch_eatimg.ch_eating.domain.Role;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Optional;
@@ -92,9 +90,9 @@ public class UserServiceImpl implements UserService {
                         .userPhone(user.getUserPhone())
                         .build();
             } else {
-                throw new RuntimeException("액세스 토큰이 만료되었습니다.");
+                throw new TokenExpiredException("액세스 토큰이 만료되었습니다.");
             }
-        } catch (RuntimeException e) {
+        } catch (TokenExpiredException e) {
             // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
             String refreshToken = getRefreshTokenFromCookies(request);
 
@@ -121,11 +119,11 @@ public class UserServiceImpl implements UserService {
                             .accessToken(newAccessToken)
                             .build();
                 } else {
-                    throw new RuntimeException("리프레쉬 토큰도 만료되었습니다.");
+                    throw new TokenExpiredException("리프레쉬 토큰도 만료되었습니다.");
                 }
-            } catch (RuntimeException innerException) {
+            } catch (TokenExpiredException innerException) {
                 // 3. 리프레쉬 토큰도 유효하지 않은 경우
-                throw new RuntimeException("로그인 상태가 아닙니다.");
+                throw new TokenExpiredException("로그인 상태가 아닙니다.");
             }
         }
     }
