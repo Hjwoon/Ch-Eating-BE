@@ -35,16 +35,11 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("이미 존재하는 아이디입니다.");
         }
 
-        List<Role> roles = dto.getUserRoles().stream()
-                .map(roleName -> roleRepository.findByRoleName(RoleName.valueOf(roleName))
-                        .orElseThrow(() -> new IllegalArgumentException(roleName + "은 존재하지 않는 역할입니다.")))
-                .collect(Collectors.toList());
+        Role defaultRole = roleRepository.findByRoleName(RoleName.ROLE_CLIENT)
+                .orElseThrow(() -> new IllegalArgumentException("기본 역할이 설정되어 있지 않습니다."));
 
-        User user = User.toEntity(dto, roles);
+        User user = User.toEntity(dto, defaultRole);
         userRepository.save(user);
-
-        // 디버깅용 코드
-        user.getUserRoles().forEach(userRole -> System.out.println("Saved role for user: " + userRole.getRole().getRoleName()));
 
         return "회원가입에 성공했습니다.";
     }
@@ -64,5 +59,4 @@ public class UserServiceImpl implements UserService {
                 .refreshToken(refreshToken)
                 .build();
     }
-
 }
