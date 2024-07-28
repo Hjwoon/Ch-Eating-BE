@@ -140,31 +140,24 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-
-    private String getRefreshTokenFromCookies(HttpServletRequest request) {
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
-
-
     @Transactional
     @Override
-    public void deleteUser(HttpServletRequest request) {
+    public CustomApiResponse<String> deleteUser(HttpServletRequest request) {
         String accessToken = jwtTokenProvider.resolveToken(request);
         String refreshToken = getRefreshTokenFromCookies(request);
 
-        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-            handleUserDeletion(accessToken, refreshToken, "유효한 액세스 토큰이 존재합니다.");
-        } else if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
-            handleUserDeletion(refreshToken, refreshToken, "액세스 토큰이 만료되었지만 유효한 리프레쉬 토큰이 존재합니다.");
-        } else {
-            throw new RuntimeException("유효한 토큰이 없거나 모두 만료되었습니다. 로그인 후 다시 시도해주세요.");
+        try {
+            if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+                handleUserDeletion(accessToken, refreshToken, "유효한 액세스 토큰이 존재합니다.");
+            } else if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+                handleUserDeletion(refreshToken, refreshToken, "액세스 토큰이 만료되었지만 유효한 리프레쉬 토큰이 존재합니다.");
+            } else {
+                return CustomApiResponse.createFailWithout(HttpStatus.UNAUTHORIZED.value(), "유효한 토큰이 없거나 모두 만료되었습니다. 로그인 후 다시 시도해주세요.");
+            }
+
+            return CustomApiResponse.createSuccess(HttpStatus.OK.value(), "회원 탈퇴가 완료되었습니다.", "회원 탈퇴 성공");
+        } catch (RuntimeException e) {
+            return CustomApiResponse.createFailWithout(HttpStatus.INTERNAL_SERVER_ERROR.value(), "회원 탈퇴 중 문제가 발생했습니다: " + e.getMessage());
         }
     }
 
@@ -179,7 +172,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void logout(HttpServletRequest request, HttpServletResponse response) {
+    public CustomApiResponse<String> logout(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = getRefreshTokenFromCookies(request);
 
         Cookie cookie = new Cookie("refreshToken", null);
@@ -189,9 +182,56 @@ public class UserServiceImpl implements UserService {
         response.addCookie(cookie);
 
         if (refreshToken != null) {
-            System.out.println("리프레쉬 토큰이 무효화되었습니다.");
+            return CustomApiResponse.createSuccess(HttpStatus.OK.value(), "로그아웃 되었습니다.", "로그아웃 성공");
         } else {
-            System.out.println("로그아웃 요청에서 유효한 리프레쉬 토큰을 찾을 수 없습니다.");
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "로그아웃 요청에서 유효한 리프레쉬 토큰을 찾을 수 없습니다.");
         }
+    }
+
+    @Override
+    public CustomApiResponse<String> checkUserIdExists(String userId) {
+        boolean exists = userRepository.findByUserId(userId).isPresent();
+        String message = exists ? "중복된 아이디입니다." : "사용 가능한 아이디입니다.";
+        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), message, "아이디 중복 확인");
+    }
+
+    public CustomApiResponse<UserMyPageDto> getMyPage(HttpServletRequest request) {
+        try {
+            String accessToken = jwtTokenProvider.resolveToken(request);
+            if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
+                throw new RuntimeException("유효한 액세스 토큰이 없습니다.");
+            }
+
+            String userId = jwtTokenProvider.getUsername(accessToken);
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            UserMyPageDto userMyPageDto = UserMyPageDto.builder()
+                    .userId(user.getUserId())
+                    .userName(user.getUserName())
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    userMyPageDto,
+                    "마이페이지 정보 조회 성공"
+            );
+        } catch (RuntimeException e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "마이페이지 정보 조회 실패: " + e.getMessage()
+            );
+        }
+    }
+
+    private String getRefreshTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

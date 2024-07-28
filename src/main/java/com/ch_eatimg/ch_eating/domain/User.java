@@ -39,6 +39,9 @@ public class User extends BaseEntity {
     @Column(name = "user_name", nullable = false)
     private String userName;
 
+//    @Column(name = "user_alert", nullable = true)
+//    boolean userAlert = false;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<UserRole> userRoles;
 

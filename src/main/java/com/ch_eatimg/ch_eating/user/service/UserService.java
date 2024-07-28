@@ -16,7 +16,11 @@ public interface UserService {
     UserInfoDto getUserInfo(HttpServletRequest request);
 
     @Transactional
-    void deleteUser(HttpServletRequest request);
+    CustomApiResponse<String> deleteUser(HttpServletRequest request);
 
-    void logout(HttpServletRequest request, HttpServletResponse response);
+    CustomApiResponse<String> logout(HttpServletRequest request, HttpServletResponse response);
+
+    CustomApiResponse<String> checkUserIdExists(String userId);
+
+    CustomApiResponse<UserMyPageDto> getMyPage(HttpServletRequest request);
 }
