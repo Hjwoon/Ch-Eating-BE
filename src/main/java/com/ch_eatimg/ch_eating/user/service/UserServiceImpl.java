@@ -93,16 +93,19 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+
     @Transactional(readOnly = true)
     @Override
     public UserInfoDto getUserInfo(HttpServletRequest request) {
         String accessToken = jwtTokenProvider.resolveToken(request);
 
         try {
+            // 1. 액세스 토큰이 유효한 경우
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
                 String username = jwtTokenProvider.getUsername(accessToken);
                 User user = userRepository.findByUserId(username)
-                        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                        .orElseThrow(() -> new RuntimeException());
 
                 return UserInfoDto.builder()
                         .userId(user.getUserId())
@@ -112,6 +115,7 @@ public class UserServiceImpl implements UserService {
                 throw new TokenExpiredException("액세스 토큰이 만료되었습니다.");
             }
         } catch (TokenExpiredException e) {
+            // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
             String refreshToken = getRefreshTokenFromCookies(request);
 
             try {
@@ -120,12 +124,13 @@ public class UserServiceImpl implements UserService {
                     String newAccessToken = jwtTokenProvider.createToken(
                             jwtTokenProvider.getUsername(refreshToken),
                             userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
-                                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."))
+                                    .orElseThrow()
                                     .getUserRoles().stream()
                                     .map(UserRole::getRole)
                                     .collect(Collectors.toList())
                     );
 
+                    // 사용자 정보를 반환
                     User user = userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
                             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
@@ -138,6 +143,7 @@ public class UserServiceImpl implements UserService {
                     throw new TokenExpiredException("리프레쉬 토큰이 만료되었습니다.");
                 }
             } catch (TokenExpiredException innerException) {
+                // 3. 리프레쉬 토큰도 유효하지 않은 경우
                 throw new TokenExpiredException("로그인 상태가 아닙니다.");
             }
         }
@@ -164,7 +170,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         userRepository.delete(user);
-        jwtTokenProvider.invalidateToken(refreshToken);
 
         System.out.println("사용자 " + username + " 삭제 완료. " + message);
     }
@@ -180,7 +185,6 @@ public class UserServiceImpl implements UserService {
         response.addCookie(cookie);
 
         if (refreshToken != null) {
-            jwtTokenProvider.invalidateToken(refreshToken);
             System.out.println("리프레쉬 토큰이 무효화되었습니다.");
         } else {
             System.out.println("로그아웃 요청에서 유효한 리프레쉬 토큰을 찾을 수 없습니다.");

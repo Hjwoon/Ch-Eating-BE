@@ -33,9 +33,6 @@ public class JwtTokenProvider {
     @Value("${application.security.jwt.refresh-expiration}")
     private long refreshTokenValidityInMilliseconds;
 
-    // 블랙리스트를 위한 in-memory 저장소
-    private Set<String> tokenBlacklist = new HashSet<>();
-
     @PostConstruct
     protected void init() {
         // Ensure secret key is base64 encoded
@@ -118,10 +115,5 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false; // Token is invalid
         }
-    }
-
-    //리프레시 토큰 블랙리스트 처리
-    public void invalidateToken(String refreshToken) {
-        tokenBlacklist.add(refreshToken);
     }
 }
