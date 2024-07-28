@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/users/signUp", "/api/users/signIn").permitAll() // 회원가입 및 로그인은 누구나 접근 가능
+                        .requestMatchers("/api/users/signUp", "/api/users/signIn", "/api/users/isLogin").permitAll() // 회원가입 및 로그인은 누구나 접근 가능
                         .requestMatchers("/api/users/logout", "/api/users/delete").authenticated() // 로그아웃 및 회원탈퇴는 인증된 사용자만 접근 가능
                         .anyRequest().hasAnyAuthority("ROLE_CLIENT") // 그 외 모든 요청은 ROLE_CLIENT 권한이 필요
                 )

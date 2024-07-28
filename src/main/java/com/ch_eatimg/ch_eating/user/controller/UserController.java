@@ -55,8 +55,6 @@ public class UserController {
             UserInfoDto userInfo = userService.getUserInfo(request);
             return ResponseEntity.ok(userInfo);
         } catch (TokenExpiredException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new TokenExpiredResponse("액세스 토큰이 만료되었습니다. 리프레쉬 토큰을 사용해 새 액세스 토큰을 발급받으세요."));
-        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new TokenExpiredResponse("로그인 상태가 아닙니다. 다시 로그인 해주세요."));
         }
     }

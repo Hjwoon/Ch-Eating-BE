@@ -8,6 +8,7 @@ import com.ch_eatimg.ch_eating.user.dto.*;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import com.ch_eatimg.ch_eating.util.vaild.CustomValid;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -66,7 +67,7 @@ public class UserServiceImpl implements UserService {
             return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
 
-        // 비밀번호 확인 (비밀번호는 예시를 위해 단순 문자열 비교로 작성)
+        // 비밀번호 확인
         if (!user.getUserPassword().equals(dto.getUserPassword())) {
             return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "비밀번호를 확인하세요.");
         }
@@ -82,7 +83,6 @@ public class UserServiceImpl implements UserService {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60); // 1주일
         response.addCookie(cookie);
 
         return CustomApiResponse.createSuccess(
@@ -92,62 +92,66 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-
-
-
-    @Transactional(readOnly = true)
     @Override
     public UserInfoDto getUserInfo(HttpServletRequest request) {
         String accessToken = jwtTokenProvider.resolveToken(request);
+        User user = null;
+        String newAccessToken = null;
 
         try {
             // 1. 액세스 토큰이 유효한 경우
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
                 String username = jwtTokenProvider.getUsername(accessToken);
-                User user = userRepository.findByUserId(username)
-                        .orElseThrow(() -> new RuntimeException());
-
-                return UserInfoDto.builder()
-                        .userId(user.getUserId())
-                        .userName(user.getUserName())
-                        .build();
+                user = userRepository.findByUserId(username)
+                        .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
             } else {
-                throw new TokenExpiredException("액세스 토큰이 만료되었습니다.");
-            }
-        } catch (TokenExpiredException e) {
-            // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
-            String refreshToken = getRefreshTokenFromCookies(request);
-
-            try {
+                // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
+                String refreshToken = getRefreshTokenFromCookies(request);
                 if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
                     // 리프레쉬 토큰이 유효한 경우 새로운 액세스 토큰 발급
-                    String newAccessToken = jwtTokenProvider.createToken(
-                            jwtTokenProvider.getUsername(refreshToken),
-                            userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
-                                    .orElseThrow()
-                                    .getUserRoles().stream()
+                    String username = jwtTokenProvider.getUsername(refreshToken);
+                    user = userRepository.findByUserId(username)
+                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+                    newAccessToken = jwtTokenProvider.createToken(
+                            username,
+                            user.getUserRoles().stream()
                                     .map(UserRole::getRole)
                                     .collect(Collectors.toList())
                     );
-
-                    // 사용자 정보를 반환
-                    User user = userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
-                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-                    return UserInfoDto.builder()
-                            .userId(user.getUserId())
-                            .userName(user.getUserName())
-                            .accessToken(newAccessToken)
-                            .build();
                 } else {
                     throw new TokenExpiredException("리프레쉬 토큰이 만료되었습니다.");
                 }
-            } catch (TokenExpiredException innerException) {
-                // 3. 리프레쉬 토큰도 유효하지 않은 경우
+            }
+
+            if (user == null) {
                 throw new TokenExpiredException("로그인 상태가 아닙니다.");
             }
+
+            return UserInfoDto.builder()
+                    .userId(user.getUserId())
+                    .userName(user.getUserName())
+                    .accessToken(newAccessToken) // 새로운 액세스 토큰이 있을 경우 설정
+                    .build();
+        } catch (TokenExpiredException e) {
+            throw new TokenExpiredException("로그인 상태가 아닙니다.");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new RuntimeException("잘못된 토큰입니다.", e); // 추가된 부분: 잘못된 토큰 처리
         }
     }
+
+
+    private String getRefreshTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
 
     @Transactional
     @Override
@@ -189,17 +193,5 @@ public class UserServiceImpl implements UserService {
         } else {
             System.out.println("로그아웃 요청에서 유효한 리프레쉬 토큰을 찾을 수 없습니다.");
         }
-    }
-
-    private String getRefreshTokenFromCookies(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
     }
 }
