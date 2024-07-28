@@ -17,8 +17,5 @@ public class UserSignUpReqDto {
     private String userName;
 
     @NotNull
-    private String userPhone;
-
-    @NotNull
     List<String> userRoles;
 }

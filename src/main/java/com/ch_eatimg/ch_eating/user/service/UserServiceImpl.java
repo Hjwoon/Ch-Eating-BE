@@ -4,15 +4,16 @@ import com.ch_eatimg.ch_eating.domain.*;
 import com.ch_eatimg.ch_eating.exception.TokenExpiredException;
 import com.ch_eatimg.ch_eating.role.RoleRepository;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
-import com.ch_eatimg.ch_eating.user.dto.UserInfoDto;
-import com.ch_eatimg.ch_eating.user.dto.UserSignInReqDto;
-import com.ch_eatimg.ch_eating.user.dto.UserSignInResDto;
-import com.ch_eatimg.ch_eating.user.dto.UserSignUpReqDto;
+import com.ch_eatimg.ch_eating.user.dto.*;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
+import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
+import com.ch_eatimg.ch_eating.util.vaild.CustomValid;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +31,10 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public String signUp(UserSignUpReqDto dto) {
+    public CustomApiResponse<UserSignUpResDto> signUp(UserSignUpReqDto dto, HttpServletResponse response) {
         Optional<User> optionalUser = userRepository.findByUserId(dto.getUserId());
         if (optionalUser.isPresent()) {
-            throw new RuntimeException("이미 존재하는 아이디입니다.");
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
 
         List<Role> roles = dto.getUserRoles().stream()
@@ -44,15 +45,33 @@ public class UserServiceImpl implements UserService {
         User user = User.toEntity(dto, roles);
         userRepository.save(user);
 
-        // 디버깅용 코드
-        user.getUserRoles().forEach(userRole -> System.out.println("Saved role for user: " + userRole.getRole().getRoleName()));
-
-        return "회원가입에 성공했습니다.";
+        UserSignUpResDto result = new UserSignUpResDto("회원가입이 성공적으로 완료되었습니다.", user.getId().toString());
+        return CustomApiResponse.createSuccess(HttpStatus.CREATED.value(), result, "회원가입 성공");
     }
 
     @Override
-    public UserSignInResDto signIn(UserSignInReqDto dto, HttpServletResponse response) {
-        User user = userRepository.findByUserId(dto.getUserId()).orElseThrow(RuntimeException::new);
+    public CustomApiResponse<UserSignInResDto> signIn(UserSignInReqDto dto, HttpServletResponse response) {
+        // 아이디와 비밀번호 유효성 검증
+        if (dto.getUserId() == null || dto.getUserId().isEmpty() || dto.getUserPassword() == null || dto.getUserPassword().isEmpty()) {
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "아이디와 비밀번호는 필수 입력 사항입니다.");
+        }
+
+        if (!CustomValid.isUserIdValid(dto.getUserId())) {
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "아이디는 6~12자의 영문자, 숫자, 하이픈, 언더스코어만 사용할 수 있습니다.");
+        }
+
+        User user;
+        try {
+            user = userRepository.findByUserId(dto.getUserId()).orElseThrow(() -> new RuntimeException("존재하지 않는 아이디 입니다. 아이디를 확인해주세요"));
+        } catch (RuntimeException e) {
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+        }
+
+        // 비밀번호 확인
+        if (!user.getUserPassword().equals(dto.getUserPassword())) {
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "비밀번호를 확인하세요.");
+        }
+
         List<Role> roles = user.getUserRoles().stream()
                 .map(UserRole::getRole)
                 .collect(Collectors.toList());
@@ -64,74 +83,150 @@ public class UserServiceImpl implements UserService {
         Cookie cookie = new Cookie("refreshToken", refreshToken);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60); // 1주일
         response.addCookie(cookie);
 
-        return UserSignInResDto.builder()
-                .accessToken(accessToken)
-                .build();
+        return CustomApiResponse.createSuccess(
+                HttpStatus.OK.value(),
+                UserSignInResDto.builder().accessToken(accessToken).build(),
+                "로그인 성공"
+        );
     }
 
-    @Transactional(readOnly = true)
     @Override
     public UserInfoDto getUserInfo(HttpServletRequest request) {
         String accessToken = jwtTokenProvider.resolveToken(request);
+        User user = null;
+        String newAccessToken = null;
 
         try {
             // 1. 액세스 토큰이 유효한 경우
             if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
                 String username = jwtTokenProvider.getUsername(accessToken);
-                User user = userRepository.findByUserId(username)
+                user = userRepository.findByUserId(username)
                         .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-                return UserInfoDto.builder()
-                        .userId(user.getUserId())
-                        .userName(user.getUserName())
-                        .userPhone(user.getUserPhone())
-                        .build();
             } else {
-                throw new TokenExpiredException("액세스 토큰이 만료되었습니다.");
-            }
-        } catch (TokenExpiredException e) {
-            // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
-            String refreshToken = getRefreshTokenFromCookies(request);
-
-            try {
+                // 2. 액세스 토큰이 유효하지 않은 경우 리프레쉬 토큰 확인
+                String refreshToken = getRefreshTokenFromCookies(request);
                 if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
                     // 리프레쉬 토큰이 유효한 경우 새로운 액세스 토큰 발급
-                    String newAccessToken = jwtTokenProvider.createToken(
-                            jwtTokenProvider.getUsername(refreshToken),
-                            userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
-                                    .orElseThrow()
-                                    .getUserRoles().stream()
+                    String username = jwtTokenProvider.getUsername(refreshToken);
+                    user = userRepository.findByUserId(username)
+                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+                    newAccessToken = jwtTokenProvider.createToken(
+                            username,
+                            user.getUserRoles().stream()
                                     .map(UserRole::getRole)
                                     .collect(Collectors.toList())
                     );
-
-                    // 사용자 정보를 반환
-                    User user = userRepository.findByUserId(jwtTokenProvider.getUsername(refreshToken))
-                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-                    return UserInfoDto.builder()
-                            .userId(user.getUserId())
-                            .userName(user.getUserName())
-                            .userPhone(user.getUserPhone())
-                            .accessToken(newAccessToken)
-                            .build();
                 } else {
-                    throw new TokenExpiredException("리프레쉬 토큰도 만료되었습니다.");
+                    throw new TokenExpiredException("리프레쉬 토큰이 만료되었습니다.");
                 }
-            } catch (TokenExpiredException innerException) {
-                // 3. 리프레쉬 토큰도 유효하지 않은 경우
+            }
+
+            if (user == null) {
                 throw new TokenExpiredException("로그인 상태가 아닙니다.");
             }
+
+            return UserInfoDto.builder()
+                    .userId(user.getUserId())
+                    .userName(user.getUserName())
+                    .accessToken(newAccessToken) // 새로운 액세스 토큰이 있을 경우 설정
+                    .build();
+        } catch (TokenExpiredException e) {
+            throw new TokenExpiredException("로그인 상태가 아닙니다.");
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new RuntimeException("잘못된 토큰입니다.", e); // 추가된 부분: 잘못된 토큰 처리
+        }
+    }
+
+    @Transactional
+    @Override
+    public CustomApiResponse<String> deleteUser(HttpServletRequest request) {
+        String accessToken = jwtTokenProvider.resolveToken(request);
+        String refreshToken = getRefreshTokenFromCookies(request);
+
+        try {
+            if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
+                handleUserDeletion(accessToken, refreshToken, "유효한 액세스 토큰이 존재합니다.");
+            } else if (refreshToken != null && jwtTokenProvider.validateToken(refreshToken)) {
+                handleUserDeletion(refreshToken, refreshToken, "액세스 토큰이 만료되었지만 유효한 리프레쉬 토큰이 존재합니다.");
+            } else {
+                return CustomApiResponse.createFailWithout(HttpStatus.UNAUTHORIZED.value(), "유효한 토큰이 없거나 모두 만료되었습니다. 로그인 후 다시 시도해주세요.");
+            }
+
+            return CustomApiResponse.createSuccess(HttpStatus.OK.value(), "회원 탈퇴가 완료되었습니다.", "회원 탈퇴 성공");
+        } catch (RuntimeException e) {
+            return CustomApiResponse.createFailWithout(HttpStatus.INTERNAL_SERVER_ERROR.value(), "회원 탈퇴 중 문제가 발생했습니다: " + e.getMessage());
+        }
+    }
+
+    private void handleUserDeletion(String token, String refreshToken, String message) {
+        String username = jwtTokenProvider.getUsername(token);
+        User user = userRepository.findByUserId(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        userRepository.delete(user);
+
+        System.out.println("사용자 " + username + " 삭제 완료. " + message);
+    }
+
+    @Override
+    public CustomApiResponse<String> logout(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = getRefreshTokenFromCookies(request);
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        if (refreshToken != null) {
+            return CustomApiResponse.createSuccess(HttpStatus.OK.value(), "로그아웃 되었습니다.", "로그아웃 성공");
+        } else {
+            return CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "로그아웃 요청에서 유효한 리프레쉬 토큰을 찾을 수 없습니다.");
+        }
+    }
+
+    @Override
+    public CustomApiResponse<String> checkUserIdExists(String userId) {
+        boolean exists = userRepository.findByUserId(userId).isPresent();
+        String message = exists ? "중복된 아이디입니다." : "사용 가능한 아이디입니다.";
+        return CustomApiResponse.createSuccess(HttpStatus.OK.value(), message, "아이디 중복 확인");
+    }
+
+    public CustomApiResponse<UserMyPageDto> getMyPage(HttpServletRequest request) {
+        try {
+            String accessToken = jwtTokenProvider.resolveToken(request);
+            if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
+                throw new RuntimeException("유효한 액세스 토큰이 없습니다.");
+            }
+
+            String userId = jwtTokenProvider.getUsername(accessToken);
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            UserMyPageDto userMyPageDto = UserMyPageDto.builder()
+                    .userId(user.getUserId())
+                    .userName(user.getUserName())
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    userMyPageDto,
+                    "마이페이지 정보 조회 성공"
+            );
+        } catch (RuntimeException e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "마이페이지 정보 조회 실패: " + e.getMessage()
+            );
         }
     }
 
     private String getRefreshTokenFromCookies(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
                 if ("refreshToken".equals(cookie.getName())) {
                     return cookie.getValue();
                 }

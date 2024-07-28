@@ -3,6 +3,7 @@ package com.ch_eatimg.ch_eating.user.controller;
 import com.ch_eatimg.ch_eating.exception.TokenExpiredException;
 import com.ch_eatimg.ch_eating.user.dto.*;
 import com.ch_eatimg.ch_eating.user.service.UserService;
+import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,22 +19,32 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signUp")
-    public ResponseEntity<?> signUp(@RequestBody UserSignUpReqDto dto) {
+    public ResponseEntity<CustomApiResponse<UserSignUpResDto>> signUp(@RequestBody UserSignUpReqDto dto, HttpServletResponse response) {
         try {
-            String result = userService.signUp(dto);
+            CustomApiResponse<UserSignUpResDto> result = userService.signUp(dto, response);
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    CustomApiResponse.createFailWithout(HttpStatus.BAD_REQUEST.value(), "회원가입 실패: " + e.getMessage())
+            );
+        } catch (RuntimeException e) {
+            CustomApiResponse<UserSignUpResDto> errorResponse = CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "내부 서버 오류: " + e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<?> signIn(@RequestBody UserSignInReqDto dto, HttpServletResponse response) {
+    public ResponseEntity<CustomApiResponse<UserSignInResDto>> signIn(@RequestBody UserSignInReqDto dto, HttpServletResponse response) {
         try {
-            UserSignInResDto result = userService.signIn(dto, response);
-            return ResponseEntity.ok(result);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            CustomApiResponse<UserSignInResDto> result = userService.signIn(dto, response);
+            return ResponseEntity.status(result.getStatus()).body(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    CustomApiResponse.createFailWithout(HttpStatus.INTERNAL_SERVER_ERROR.value(), "서버에서 처리 중 오류가 발생했습니다: " + e.getMessage())
+            );
         }
     }
 
@@ -43,11 +54,38 @@ public class UserController {
             UserInfoDto userInfo = userService.getUserInfo(request);
             return ResponseEntity.ok(userInfo);
         } catch (TokenExpiredException e) {
-            // 액세스 토큰이 만료되었으나 리프레쉬 토큰이 유효한 경우
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new TokenExpiredResponse("액세스 토큰이 만료되었습니다. 리프레쉬 토큰을 사용해 새 액세스 토큰을 발급받으세요."));
-        } catch (RuntimeException e) {
-            // 모든 토큰이 만료되었거나 기타 오류
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new TokenExpiredResponse("로그인 상태가 아닙니다. 다시 로그인 해주세요."));
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<CustomApiResponse<String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        CustomApiResponse<String> result = userService.logout(request, response);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<CustomApiResponse<String>> deleteUser(HttpServletRequest request) {
+        CustomApiResponse<String> result = userService.deleteUser(request);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/checkUserIdExists")
+    public ResponseEntity<CustomApiResponse<String>> checkUserIdExists(@RequestParam(required = false) String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            CustomApiResponse<String> errorResponse = CustomApiResponse.createFailWithout(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "아이디 쿼리 파라미터는 필수 항목입니다."
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+        CustomApiResponse<String> result = userService.checkUserIdExists(userId);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/myPage")
+    public ResponseEntity<CustomApiResponse<UserMyPageDto>> myPage(HttpServletRequest request) {
+        CustomApiResponse<UserMyPageDto> result = userService.getMyPage(request);
+        return ResponseEntity.status(result.getStatus()).body(result);
     }
 }

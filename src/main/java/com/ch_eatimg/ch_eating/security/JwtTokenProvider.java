@@ -1,7 +1,6 @@
 package com.ch_eatimg.ch_eating.security;
 
 import com.ch_eatimg.ch_eating.domain.Role;
-import com.ch_eatimg.ch_eating.domain.RoleName;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -18,9 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
