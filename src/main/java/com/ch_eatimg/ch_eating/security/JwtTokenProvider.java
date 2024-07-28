@@ -1,7 +1,6 @@
 package com.ch_eatimg.ch_eating.security;
 
 import com.ch_eatimg.ch_eating.domain.Role;
-import com.ch_eatimg.ch_eating.domain.RoleName;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -18,9 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -35,6 +32,9 @@ public class JwtTokenProvider {
 
     @Value("${application.security.jwt.refresh-expiration}")
     private long refreshTokenValidityInMilliseconds;
+
+    // 블랙리스트를 위한 in-memory 저장소
+    private Set<String> tokenBlacklist = new HashSet<>();
 
     @PostConstruct
     protected void init() {
@@ -118,5 +118,10 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false; // Token is invalid
         }
+    }
+
+    //리프레시 토큰 블랙리스트 처리
+    public void invalidateToken(String refreshToken) {
+        tokenBlacklist.add(refreshToken);
     }
 }
