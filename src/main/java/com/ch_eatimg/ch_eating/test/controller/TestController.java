@@ -20,14 +20,14 @@ public class TestController {
     private final TestService testService;
 
     @PostMapping("/test")
-    public ResponseEntity<CustomApiResponse<TestResDto>> createAfterTest(
-            HttpServletRequest request,@Valid @RequestBody TestReqDto dto) {
+    public ResponseEntity<CustomApiResponse<TestResDto>> createTest(
+            HttpServletRequest request, @Valid @RequestBody TestReqDto dto) {
         CustomApiResponse<TestResDto> result = testService.createTest(request, dto);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 
     @GetMapping("/getTest")
-    public ResponseEntity<CustomApiResponse<List<TestResDto>>> getAfterTestsByUser(HttpServletRequest request) {
+    public ResponseEntity<CustomApiResponse<List<TestResDto>>> getTestsByUser(HttpServletRequest request) {
         CustomApiResponse<List<TestResDto>> result = testService.getTestsByUser(request);
         return ResponseEntity.status(result.getStatus()).body(result);
     }

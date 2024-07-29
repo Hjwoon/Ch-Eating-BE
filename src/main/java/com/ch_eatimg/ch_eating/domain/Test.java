@@ -15,7 +15,6 @@ import lombok.*;
         initialValue = 1,
         allocationSize = 1
 )
-
 @Table(name = "TEST")
 public class Test extends BaseEntity {
 
@@ -27,7 +26,6 @@ public class Test extends BaseEntity {
     @Column(name = "test_id")
     private Long testId;
 
-    //한명의 유저는 여러개의 식사 테스트를 할 수 있다.
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User userId;
@@ -35,12 +33,23 @@ public class Test extends BaseEntity {
     @Column(name="test_name")
     private String testName;
 
-    //테스트 결과
     @Column(name = "test_result")
     private String testResult;
 
-    //테스트 승패
     @Column(name = "test_win")
     private String testWin;
-}
 
+    public void validateFields() {
+        if (!isValidTestName(this.testName) || !isValidTestResult(this.testResult)) {
+            throw new IllegalArgumentException("테스트 이름과 결과는 '식전 배고픔 테스트', '식후 배고픔 테스트', '진짜 배고픔', '가짜 배고픔' 중 하나여야 합니다.");
+        }
+    }
+
+    private boolean isValidTestName(String testName) {
+        return "식전 배고픔 테스트".equals(testName) || "식후 배고픔 테스트".equals(testName);
+    }
+
+    private boolean isValidTestResult(String testResult) {
+        return "진짜 배고픔".equals(testResult) || "가짜 배고픔".equals(testResult);
+    }
+}
