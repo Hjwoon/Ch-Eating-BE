@@ -97,4 +97,48 @@ public class TestServiceImpl implements TestService {
             );
         }
     }
+
+    @Override
+    public CustomApiResponse<TestResDto> updateTestWin(Long testId, String testWin) {
+        try {
+            Test test = testRepository.findById(testId)
+                    .orElseThrow(() -> new RuntimeException("테스트를 찾을 수 없습니다."));
+
+            if (!"가짜 배고픔".equals(test.getTestResult())) {
+                return CustomApiResponse.createFailWithout(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "해당 테스트의 태스트 명은 '가짜 배고픔'가 아닙니다. 수정 불가."
+                );
+            }
+
+            if (!"승리".equals(testWin) && !"패배".equals(testWin)) {
+                return CustomApiResponse.createFailWithout(
+                        HttpStatus.BAD_REQUEST.value(),
+                        "유효하지 않은 승패 값입니다. (승리, 패배만 가능)"
+                );
+            }
+
+            test.setTestWin(testWin);
+            testRepository.save(test);
+
+            TestResDto responseDto = TestResDto.builder()
+                    .testId(test.getTestId())
+                    .userId(test.getUserId().getUserId())
+                    .testName(test.getTestName())
+                    .testResult(test.getTestResult())
+                    .testWin(test.getTestWin())
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    responseDto,
+                    "가짜 배고픔 테스트 승패 등록 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
 }

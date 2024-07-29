@@ -2,6 +2,7 @@ package com.ch_eatimg.ch_eating.test.controller;
 
 import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
 import com.ch_eatimg.ch_eating.test.dto.TestResDto;
+import com.ch_eatimg.ch_eating.test.dto.TestUpdateReqDto;
 import com.ch_eatimg.ch_eating.test.service.TestService;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,13 @@ public class TestController {
     @GetMapping("/getTest")
     public ResponseEntity<CustomApiResponse<List<TestResDto>>> getTestsByUser(HttpServletRequest request) {
         CustomApiResponse<List<TestResDto>> result = testService.getTestsByUser(request);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @PatchMapping("/{testId}/win")
+    public ResponseEntity<CustomApiResponse<TestResDto>> updateTestWin(
+            @PathVariable Long testId, @RequestBody TestUpdateReqDto dto) {
+        CustomApiResponse<TestResDto> result = testService.updateTestWin(testId, dto.getTestWin());
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 }
