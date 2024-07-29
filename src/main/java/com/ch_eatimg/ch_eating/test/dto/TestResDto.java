@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Builder
 @Getter
 @NoArgsConstructor
@@ -15,4 +17,5 @@ public class TestResDto {
     private String userId;
     private String testResult;
     private String testWin;
+    private LocalDateTime createAt;
 }

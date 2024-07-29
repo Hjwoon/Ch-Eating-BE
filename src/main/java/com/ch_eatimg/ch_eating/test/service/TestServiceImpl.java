@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -133,6 +136,40 @@ public class TestServiceImpl implements TestService {
                     HttpStatus.OK.value(),
                     responseDto,
                     "가짜 배고픔 테스트 승패 등록 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
+
+    @Override
+    public CustomApiResponse<List<TestResDto>> getTestsByDate(HttpServletRequest request, LocalDate date) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+            List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfDay, endOfDay).stream()
+                    .map(test -> TestResDto.builder()
+                            .userId(userId)
+                            .testId(test.getTestId())
+                            .testName(test.getTestName())
+                            .testResult(test.getTestResult())
+                            .testWin(test.getTestWin())
+                            .createAt(test.getCreateAt())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    tests,
+                    "특정 날짜의 테스트 결과 조회 성공"
             );
         } catch (Exception e) {
             return CustomApiResponse.createFailWithout(

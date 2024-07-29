@@ -8,9 +8,11 @@ import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -37,6 +39,13 @@ public class TestController {
     public ResponseEntity<CustomApiResponse<TestResDto>> updateTestWin(
             @PathVariable Long testId, @RequestBody TestUpdateReqDto dto) {
         CustomApiResponse<TestResDto> result = testService.updateTestWin(testId, dto.getTestWin());
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/byDate")
+    public ResponseEntity<CustomApiResponse<List<TestResDto>>> getTestsByDate(
+            HttpServletRequest request, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        CustomApiResponse<List<TestResDto>> result = testService.getTestsByDate(request, date);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 }
