@@ -1,4 +1,4 @@
-package com.ch_eatimg.ch_eating.beforetest.dto;
+package com.ch_eatimg.ch_eating.test.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BeforeTestResDto {
-    private Long beforeId;
+public class TestResDto {
+    private Long testId;
+    private String testName;
     private String userId;
-    private String beforeResult;
-    private String beforeWin;
+    private String testResult;
+    private String testWin;
 }
