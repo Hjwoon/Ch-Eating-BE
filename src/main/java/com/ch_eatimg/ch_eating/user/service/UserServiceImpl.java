@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoDto getUserInfo(HttpServletRequest request) {
+    public UserInfoResDto getUserInfo(HttpServletRequest request) {
         String accessToken = jwtTokenProvider.resolveToken(request);
         User user = null;
         String newAccessToken = null;
@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
                 throw new TokenExpiredException("로그인 상태가 아닙니다.");
             }
 
-            return UserInfoDto.builder()
+            return UserInfoResDto.builder()
                     .userId(user.getUserId())
                     .userName(user.getUserName())
                     .accessToken(newAccessToken) // 새로운 액세스 토큰이 있을 경우 설정
@@ -195,7 +195,7 @@ public class UserServiceImpl implements UserService {
         return CustomApiResponse.createSuccess(HttpStatus.OK.value(), message, "아이디 중복 확인");
     }
 
-    public CustomApiResponse<UserMyPageDto> getMyPage(HttpServletRequest request) {
+    public CustomApiResponse<UserMyPageResDto> getMyPage(HttpServletRequest request) {
         try {
             String accessToken = jwtTokenProvider.resolveToken(request);
             if (accessToken == null || !jwtTokenProvider.validateToken(accessToken)) {
@@ -206,14 +206,14 @@ public class UserServiceImpl implements UserService {
             User user = userRepository.findByUserId(userId)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-            UserMyPageDto userMyPageDto = UserMyPageDto.builder()
+            UserMyPageResDto userMyPageResDto = UserMyPageResDto.builder()
                     .userId(user.getUserId())
                     .userName(user.getUserName())
                     .build();
 
             return CustomApiResponse.createSuccess(
                     HttpStatus.OK.value(),
-                    userMyPageDto,
+                    userMyPageResDto,
                     "마이페이지 정보 조회 성공"
             );
         } catch (RuntimeException e) {

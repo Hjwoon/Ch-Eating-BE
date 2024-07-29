@@ -51,7 +51,7 @@ public class UserController {
     @GetMapping("/isLogin")
     public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
         try {
-            UserInfoDto userInfo = userService.getUserInfo(request);
+            UserInfoResDto userInfo = userService.getUserInfo(request);
             return ResponseEntity.ok(userInfo);
         } catch (TokenExpiredException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new TokenExpiredResponse("로그인 상태가 아닙니다. 다시 로그인 해주세요."));
@@ -84,8 +84,8 @@ public class UserController {
     }
 
     @GetMapping("/myPage")
-    public ResponseEntity<CustomApiResponse<UserMyPageDto>> myPage(HttpServletRequest request) {
-        CustomApiResponse<UserMyPageDto> result = userService.getMyPage(request);
+    public ResponseEntity<CustomApiResponse<UserMyPageResDto>> myPage(HttpServletRequest request) {
+        CustomApiResponse<UserMyPageResDto> result = userService.getMyPage(request);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 }

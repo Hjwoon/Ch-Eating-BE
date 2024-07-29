@@ -13,7 +13,7 @@ public interface UserService {
     CustomApiResponse<UserSignInResDto> signIn(UserSignInReqDto dto, HttpServletResponse response);
 
     @Transactional(readOnly = true)
-    UserInfoDto getUserInfo(HttpServletRequest request);
+    UserInfoResDto getUserInfo(HttpServletRequest request);
 
     @Transactional
     CustomApiResponse<String> deleteUser(HttpServletRequest request);
@@ -22,5 +22,5 @@ public interface UserService {
 
     CustomApiResponse<String> checkUserIdExists(String userId);
 
-    CustomApiResponse<UserMyPageDto> getMyPage(HttpServletRequest request);
+    CustomApiResponse<UserMyPageResDto> getMyPage(HttpServletRequest request);
 }
