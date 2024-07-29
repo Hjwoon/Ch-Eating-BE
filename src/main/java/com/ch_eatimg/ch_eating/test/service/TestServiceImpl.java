@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,17 +46,9 @@ public class TestServiceImpl implements TestService {
 
             testRepository.save(test);
 
-            TestResDto responseDto = TestResDto.builder()
-                    .userId(userId)
-                    .testId(test.getTestId())
-                    .testName(test.getTestName())
-                    .testResult(test.getTestResult())
-                    .testWin(test.getTestWin())
-                    .build();
-
             return CustomApiResponse.createSuccess(
                     HttpStatus.CREATED.value(),
-                    responseDto,
+                    null,
                     "테스트 결과 등록 성공"
             );
         } catch (IllegalArgumentException e) {
@@ -154,6 +147,8 @@ public class TestServiceImpl implements TestService {
 
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm"); // 시간 포맷
+
 
             List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfDay, endOfDay).stream()
                     .map(test -> TestResDto.builder()
@@ -162,7 +157,7 @@ public class TestServiceImpl implements TestService {
                             .testName(test.getTestName())
                             .testResult(test.getTestResult())
                             .testWin(test.getTestWin())
-                            .createAt(test.getCreateAt())
+                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter) : null)
                             .build())
                     .collect(Collectors.toList());
 

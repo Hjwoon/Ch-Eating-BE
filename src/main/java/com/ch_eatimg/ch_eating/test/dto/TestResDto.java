@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestResDto {
+    private String userId;
     private Long testId;
     private String testName;
-    private String userId;
     private String testResult;
     private String testWin;
-    private LocalDateTime createAt;
+    private String createTime;
 }
