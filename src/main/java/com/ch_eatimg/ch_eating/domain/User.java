@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
         initialValue = 1,
         allocationSize = 1
 )
-@Table(name = "USERS")
+@Table(name = "USER")
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(
             strategy = GenerationType.SEQUENCE,
-            generator = "id"
+            generator = "user_id_seq"
     )
     @Column(name = "id")
     private Long id;
