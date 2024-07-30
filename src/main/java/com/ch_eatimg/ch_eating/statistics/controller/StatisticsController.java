@@ -1,5 +1,6 @@
 package com.ch_eatimg.ch_eating.statistics.controller;
 
+import com.ch_eatimg.ch_eating.statistics.dto.StatisticsMonthlyResponseDto;
 import com.ch_eatimg.ch_eating.statistics.dto.StatisticsResponseDto;
 import com.ch_eatimg.ch_eating.statistics.service.StatisticsService;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
@@ -18,7 +19,7 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     // 주간 조회(요일별)
-    @GetMapping("/week")
+    @GetMapping("/weekly")
     public ResponseEntity<CustomApiResponse<StatisticsResponseDto>> getFakeHungerStatistics(
             @RequestParam String startDate,
             @RequestParam String endDate) {
@@ -26,4 +27,11 @@ public class StatisticsController {
     }
 
     // 월간 조회(한 주씩 합산)
+    @GetMapping("/monthly")
+    public ResponseEntity<CustomApiResponse<StatisticsMonthlyResponseDto>> getFakeHungerStatisticsMonth(
+            @RequestParam String startDate,
+            @RequestParam String endDate) {
+        return statisticsService.getFakeHungerStatisticsMonth(startDate, endDate);
+    }
+
 }
