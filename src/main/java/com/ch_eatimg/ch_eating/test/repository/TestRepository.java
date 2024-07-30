@@ -10,4 +10,6 @@ import java.util.List;
 public interface TestRepository extends JpaRepository<Test, Long> {
     List<Test> findByUserId(User user);
     List<Test> findByUserIdAndCreateAtBetween(User user, LocalDateTime startOfDay, LocalDateTime endOfDay);
+    List<Test> findByTestResultAndCreateAtBetween(String testResult, LocalDateTime start, LocalDateTime end);
+
 }
