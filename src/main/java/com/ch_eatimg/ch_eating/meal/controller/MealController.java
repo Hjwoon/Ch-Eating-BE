@@ -1,11 +1,9 @@
 package com.ch_eatimg.ch_eating.meal.controller;
 
 import com.ch_eatimg.ch_eating.meal.dto.MealCreateRequestDto;
-import com.ch_eatimg.ch_eating.meal.dto.MealUpdateRequestDto;
-import com.ch_eatimg.ch_eating.meal.dto.MealDeleteRequestDto;
+import com.ch_eatimg.ch_eating.meal.dto.MealModifyRequestDto;
 import com.ch_eatimg.ch_eating.meal.service.MealServiceImpl;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,5 +24,11 @@ public class MealController {
     // 삭사량 조회
     @GetMapping("/meals")
     private ResponseEntity<CustomApiResponse<?>> getMeals() { return mealService.getMeals(); }
+
+    // 식사량 수정
+    @PutMapping("/{mealId}")
+    private ResponseEntity<CustomApiResponse<?>> updateMeal(@PathVariable Long mealId, @RequestBody MealModifyRequestDto.Req req) {
+        return mealService.modifyMeal(mealId, req);
+    }
 
 }
