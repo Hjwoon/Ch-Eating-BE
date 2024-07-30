@@ -84,7 +84,7 @@ public class MealServiceImpl implements MealService {
     }
 
     // 식사량 전체 조회
-    /*@Override @Transactional
+    @Override @Transactional
     public ResponseEntity<CustomApiResponse<?>> getMeals() {
         List<Meal> meals = mealRepository.findAll();
 
@@ -103,7 +103,7 @@ public class MealServiceImpl implements MealService {
 
         return ResponseEntity.status(200)
                 .body(CustomApiResponse.createSuccess(200, mealResponses, "식사량 전체 조회에 성공하였습니다."));
-    }*/
+    }
 
     // 식사량 수정
     /*@Override @Transactional
