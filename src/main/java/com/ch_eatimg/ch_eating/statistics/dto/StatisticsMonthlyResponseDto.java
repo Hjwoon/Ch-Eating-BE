@@ -1,20 +1,25 @@
 package com.ch_eatimg.ch_eating.statistics.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Data
 @Builder
-public class StatisticsResponseDto {
-
-    private List<PeriodStatistics> periodStatistics;
+@NoArgsConstructor
+@AllArgsConstructor
+public class StatisticsMonthlyResponseDto {
+    private List<MonthlyStatistics> periodStatistics;
     private List<Integer> totalFakeHungerTimeDistribution;
 
     @Data
     @Builder
-    public static class PeriodStatistics {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class MonthlyStatistics {
         private String date;
         private int totalFakeHungerOccurrences;
         private int totalFakeHungerFailures;
