@@ -34,14 +34,12 @@ public class Meal extends BaseEntity {
     @Column(name = "MEAL_DETAIL")
     private String mealDetail; // 세부사항
 
-    public static Meal createMeal(User user, String mealBrand, String mealType, String mealName, String mealAmount, String mealDetail) {
-        return Meal.builder()
-                .user(user)
-                .mealBrand(mealBrand)
-                .mealType(mealType)
-                .mealName(mealName)
-                .mealAmount(mealAmount)
-                .mealDetail(mealDetail)
-                .build();
+    /// 식사량 수정 메소드
+    public void changeMeal(String mealType, String mealBrand, String mealName, String mealAmount, String mealDetail) {
+        this.mealType = mealType;
+        this.mealBrand = mealBrand;
+        this.mealName = mealName;
+        this.mealAmount = mealAmount;
+        this.mealDetail = mealDetail;
     }
 }
