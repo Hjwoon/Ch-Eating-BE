@@ -3,6 +3,7 @@ package com.ch_eatimg.ch_eating.test.service;
 import com.ch_eatimg.ch_eating.domain.Test;
 import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
 import com.ch_eatimg.ch_eating.test.dto.TestResDto;
+import com.ch_eatimg.ch_eating.test.dto.TestStatisticsDto;
 import com.ch_eatimg.ch_eating.test.repository.TestRepository;
 import com.ch_eatimg.ch_eating.domain.User;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -147,7 +149,7 @@ public class TestServiceImpl implements TestService {
 
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm"); // 시간 포맷
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm"); // 시간 포맷
 
 
             List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfDay, endOfDay).stream()
@@ -173,4 +175,99 @@ public class TestServiceImpl implements TestService {
             );
         }
     }
+
+    @Override
+    public CustomApiResponse<List<TestResDto>> getTestsByMonth(HttpServletRequest request, int year, int month) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // 월의 시작과 끝 계산
+            LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
+            LocalDateTime endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.toLocalDate().lengthOfMonth()).with(LocalTime.MAX);
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 시간 포맷
+
+            List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfMonth, endOfMonth).stream()
+                    .map(test -> TestResDto.builder()
+                            .userId(userId)
+                            .testId(test.getTestId())
+                            .testName(test.getTestName())
+                            .testResult(test.getTestResult())
+                            .testWin(test.getTestWin())
+                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter) : null)
+                            .build())
+                    .collect(Collectors.toList());
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    tests,
+                    "특정 월의 테스트 결과 조회 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
+
+    @Override
+    public CustomApiResponse<TestStatisticsDto> getFakeHungerStatistics(HttpServletRequest request, int year, int month) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
+            LocalDateTime endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.toLocalDate().lengthOfMonth()).with(LocalTime.MAX);
+
+            List<Test> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfMonth, endOfMonth);
+
+            long totalWins = tests.stream()
+                    .filter(test -> "승리".equals(test.getTestWin()))
+                    .count();
+
+            Map<String, Long> fakeHungerCountByDayOfWeek = tests.stream()
+                    .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                    .collect(Collectors.groupingBy(
+                            test -> test.getCreateAt().getDayOfWeek().toString(),
+                            Collectors.counting()
+                    ));
+
+            String mostCommonDayForFakeHunger = fakeHungerCountByDayOfWeek.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            // 가장 많이 나타난 시간대 찾기
+            String mostCommonHourForFakeHunger = tests.stream()
+                    .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                    .collect(Collectors.groupingBy(
+                            test -> String.format("%02d:00", test.getCreateAt().getHour()),
+                            Collectors.counting()
+                    )).entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            TestStatisticsDto statistics = TestStatisticsDto.builder()
+                    .totalWins((int) totalWins)
+                    .mostCommonDayForFakeHunger(mostCommonDayForFakeHunger)
+                    .mostCommonHourForFakeHunger(mostCommonHourForFakeHunger)
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    statistics,
+                    "가짜 배고픔 통계 조회 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
+
 }

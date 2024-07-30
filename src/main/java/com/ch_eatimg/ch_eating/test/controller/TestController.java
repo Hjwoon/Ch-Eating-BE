@@ -2,6 +2,7 @@ package com.ch_eatimg.ch_eating.test.controller;
 
 import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
 import com.ch_eatimg.ch_eating.test.dto.TestResDto;
+import com.ch_eatimg.ch_eating.test.dto.TestStatisticsDto;
 import com.ch_eatimg.ch_eating.test.dto.TestUpdateReqDto;
 import com.ch_eatimg.ch_eating.test.service.TestService;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
@@ -46,6 +47,24 @@ public class TestController {
     public ResponseEntity<CustomApiResponse<List<TestResDto>>> getTestsByDate(
             HttpServletRequest request, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         CustomApiResponse<List<TestResDto>> result = testService.getTestsByDate(request, date);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/byMonth")
+    public ResponseEntity<CustomApiResponse<List<TestResDto>>> getTestsByMonth(
+            HttpServletRequest request,
+            @RequestParam int year,
+            @RequestParam int month) {
+        CustomApiResponse<List<TestResDto>> result = testService.getTestsByMonth(request, year, month);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<CustomApiResponse<TestStatisticsDto>> getFakeHungerStatistics(
+            HttpServletRequest request,
+            @RequestParam int year,
+            @RequestParam int month) {
+        CustomApiResponse<TestStatisticsDto> result = testService.getFakeHungerStatistics(request, year, month);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 }
