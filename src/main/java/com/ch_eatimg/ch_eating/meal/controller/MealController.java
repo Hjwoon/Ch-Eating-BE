@@ -1,6 +1,7 @@
 package com.ch_eatimg.ch_eating.meal.controller;
 
 import com.ch_eatimg.ch_eating.meal.dto.MealCreateRequestDto;
+import com.ch_eatimg.ch_eating.meal.dto.MealDeleteRequestDto;
 import com.ch_eatimg.ch_eating.meal.dto.MealModifyRequestDto;
 import com.ch_eatimg.ch_eating.meal.service.MealServiceImpl;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
@@ -29,6 +30,13 @@ public class MealController {
     @PutMapping("/{mealId}")
     private ResponseEntity<CustomApiResponse<?>> updateMeal(@PathVariable Long mealId, @RequestBody MealModifyRequestDto.Req req) {
         return mealService.modifyMeal(mealId, req);
+    }
+
+    // 식사량 제거
+    @DeleteMapping("/{mealId}")
+    public ResponseEntity<CustomApiResponse<?>> deleteMeal(@PathVariable String mealId, @RequestBody MealDeleteRequestDto requestDto) {
+        requestDto.setMealId(mealId);
+        return mealService.deleteMeal(requestDto);
     }
 
 }

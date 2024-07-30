@@ -140,9 +140,8 @@ public class MealServiceImpl implements MealService {
                 .body(CustomApiResponse.createSuccess(200, responseDto, "식사량 기록이 성공적으로 수정되었습니다."));
     }
 
-
     // 식사량 삭제
-    /*@Override @Transactional
+    @Override @Transactional
     public ResponseEntity<CustomApiResponse<?>> deleteMeal(MealDeleteRequestDto dto) {
 
         Optional<Meal> findMeal = mealRepository.findByMealId(Long.valueOf(dto.getMealId()));
@@ -168,5 +167,6 @@ public class MealServiceImpl implements MealService {
 
         return ResponseEntity.status(201)
                 .body(CustomApiResponse.createSuccess(201, findMeal.get().getMealId(), "식사량이 삭제되었습니다."));
-    }*/
+    }
+
 }
