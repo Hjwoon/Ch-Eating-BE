@@ -1,6 +1,5 @@
 package com.ch_eatimg.ch_eating.meal.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 

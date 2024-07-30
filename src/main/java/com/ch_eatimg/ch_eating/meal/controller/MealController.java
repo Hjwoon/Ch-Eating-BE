@@ -17,18 +17,10 @@ public class MealController {
 
     private final MealServiceImpl mealService;
 
+    // 식사량 등록
     @PostMapping
     private ResponseEntity<CustomApiResponse<?>> createMeal(@RequestBody MealCreateRequestDto dto) {
         return mealService.createMeals(dto);
     }
 
-    /*@PutMapping("/{mealId}")
-    private ResponseEntity<CustomApiResponse<?>> updateMeal(@PathVariable String userId, @PathVariable Long mealId, @RequestBody MealUpdateRequestDto.Req req) {
-        return mealService.updateMeal(userId, mealId, req);
-    }*/
-
-    /*@DeleteMapping
-    private ResponseEntity<CustomApiResponse<?>> deleteMeal(@RequestBody @Valid MealDeleteRequestDto dto) {
-        return mealService.deleteMeal(dto);
-    }*/
 }
