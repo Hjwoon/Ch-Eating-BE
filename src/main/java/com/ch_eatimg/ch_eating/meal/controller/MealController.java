@@ -23,4 +23,8 @@ public class MealController {
         return mealService.createMeals(dto);
     }
 
+    // 삭사량 조회
+    @GetMapping("/meals")
+    private ResponseEntity<CustomApiResponse<?>> getMeals() { return mealService.getMeals(); }
+
 }
