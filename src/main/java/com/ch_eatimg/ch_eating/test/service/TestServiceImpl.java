@@ -270,4 +270,61 @@ public class TestServiceImpl implements TestService {
         }
     }
 
+    @Override
+    public CustomApiResponse<TestStatisticsDto> getFakeHungerStatisticsByDateRange(HttpServletRequest request, LocalDate startDate, LocalDate endDate) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+            List<Test> tests = testRepository.findByUserIdAndCreateAtBetween(user, startDateTime, endDateTime);
+
+            long totalWins = tests.stream()
+                    .filter(test -> "승리".equals(test.getTestWin()))
+                    .count();
+
+            Map<String, Long> fakeHungerCountByDayOfWeek = tests.stream()
+                    .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                    .collect(Collectors.groupingBy(
+                            test -> test.getCreateAt().getDayOfWeek().toString(),
+                            Collectors.counting()
+                    ));
+
+            String mostCommonDayForFakeHunger = fakeHungerCountByDayOfWeek.entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            // 가장 많이 나타난 시간대 찾기
+            String mostCommonHourForFakeHunger = tests.stream()
+                    .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                    .collect(Collectors.groupingBy(
+                            test -> String.format("%02d:00", test.getCreateAt().getHour()),
+                            Collectors.counting()
+                    )).entrySet().stream()
+                    .max(Map.Entry.comparingByValue())
+                    .map(Map.Entry::getKey)
+                    .orElse(null);
+
+            TestStatisticsDto statistics = TestStatisticsDto.builder()
+                    .totalWins((int) totalWins)
+                    .mostCommonDayForFakeHunger(mostCommonDayForFakeHunger)
+                    .mostCommonHourForFakeHunger(mostCommonHourForFakeHunger)
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    statistics,
+                    "가짜 배고픔 통계 조회 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
 }
