@@ -16,5 +16,6 @@ public interface TestService {
     CustomApiResponse<List<TestResDto>> getTestsByDate(HttpServletRequest request, LocalDate date);
     CustomApiResponse<List<TestResDto>> getTestsByMonth(HttpServletRequest request, int year, int month);
     CustomApiResponse<TestStatisticsDto> getFakeHungerStatistics(HttpServletRequest request, int year, int month);
+    CustomApiResponse<TestStatisticsDto> getFakeHungerStatisticsByDateRange(HttpServletRequest request, LocalDate startDate, LocalDate endDate);
 
 }

@@ -67,4 +67,13 @@ public class TestController {
         CustomApiResponse<TestStatisticsDto> result = testService.getFakeHungerStatistics(request, year, month);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
+
+    @GetMapping("/statistics/byDateRange")
+    public ResponseEntity<CustomApiResponse<TestStatisticsDto>> getFakeHungerStatisticsByDateRange(
+            HttpServletRequest request,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        CustomApiResponse<TestStatisticsDto> result = testService.getFakeHungerStatisticsByDateRange(request, startDate, endDate);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
 }
