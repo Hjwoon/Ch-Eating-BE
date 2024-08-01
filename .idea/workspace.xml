@@ -9,23 +9,10 @@
       <change beforePath="$PROJECT_DIR$/.gradle/8.8/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/executionHistory/executionHistory.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/8.8/fileHashes/resourceHashesCache.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.8/fileHashes/resourceHashesCache.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/domain/Meal$MealBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/domain/Meal$MealBuilder.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/domain/Meal.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/domain/Meal.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/dto/MealListDto$MealResponse$MealResponseBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/dto/MealListDto$MealResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/dto/MealListDto.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/dto/MealListDto.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/service/MealServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/meal/service/MealServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/security/SecurityConfig.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/security/SecurityConfig.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/util/entity/BaseEntity.class" beforeDir="false" afterPath="$PROJECT_DIR$/build/classes/java/main/com/ch_eatimg/ch_eating/util/entity/BaseEntity.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" beforeDir="false" afterPath="$PROJECT_DIR$/build/tmp/compileJava/previous-compilation-data.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/domain/Meal.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/domain/Meal.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/meal/dto/MealListDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/meal/dto/MealListDto.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/meal/service/MealServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/meal/service/MealServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/util/entity/BaseEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/util/entity/BaseEntity.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -136,7 +123,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Spring Boot.ChEatingApplication.executor": "Run",
-    "git-widget-placeholder": "statistics",
+    "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/limseungbin/Documents/GitHub/Ch-Eating-BE/src/main/resources",
     "node.js.detected.package.eslint": "true",
@@ -249,6 +236,14 @@
       </list>
     </recent_temporary>
   </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.15989.150" />
+        <option value="bundled-js-predefined-1d06a55b98c1-91d5c284f522-JavaScript-IU-241.15989.150" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -287,6 +282,7 @@
       <workItem from="1722424860380" duration="90000" />
       <workItem from="1722426693450" duration="637000" />
       <workItem from="1722443066054" duration="9376000" />
+      <workItem from="1722499735857" duration="37000" />
     </task>
     <servers />
   </component>
