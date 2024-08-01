@@ -17,6 +17,6 @@ public class MealModifyResponseDto {
     private String mealName;
     private String mealAmount;
     private String mealDetail;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
+    private String createAt;
+    private String updateAt;
 }

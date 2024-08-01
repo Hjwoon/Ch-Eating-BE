@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface MealService {
     ResponseEntity<CustomApiResponse<?>> createMeals(MealCreateRequestDto requestDto);
-    ResponseEntity<CustomApiResponse<?>> getMeals();
+    ResponseEntity<CustomApiResponse<?>> getMeals(String userId);
     ResponseEntity<CustomApiResponse<?>> modifyMeal(Long mealId, MealModifyRequestDto.Req req);
     ResponseEntity<CustomApiResponse<?>> deleteMeal(MealDeleteRequestDto dto);
 }

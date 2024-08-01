@@ -21,7 +21,8 @@ import java.util.logging.Logger;
 
 @Service
 public class MealServiceImpl implements MealService {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    // 날짜 포맷터를 설정 (형식: yyyy-MM-dd)
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private final MealRepository mealRepository;
     private final UserRepository userRepository;
 
@@ -92,13 +93,10 @@ public class MealServiceImpl implements MealService {
     // 식사량 전체 조회
     @Override
     @Transactional
-    public ResponseEntity<CustomApiResponse<?>> getMeals() {
+    public ResponseEntity<CustomApiResponse<?>> getMeals(String userId) {
         try {
-            // 모든 식사 데이터를 데이터베이스에서 조회
-            List<Meal> meals = mealRepository.findAll();
-
-            // 날짜 포맷터를 설정 (형식: yyyy-MM-dd)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            // 특정 사용자에 해당하는 모든 식사 데이터를 데이터베이스에서 조회
+            List<Meal> meals = mealRepository.findByUserUserId(userId);
 
             // MealResponse DTO 리스트를 초기화
             List<MealListDto> mealResponses = new ArrayList<>();
@@ -112,8 +110,8 @@ public class MealServiceImpl implements MealService {
                         .mealAmount(meal.getMealAmount())
                         .mealBrand(meal.getMealBrand())
                         .mealDetail(meal.getMealDetail())
-                        .createAt(meal.getCreateAt().format(formatter))
-                        .updateAt(meal.getUpdateAt().format(formatter))
+                        .createAt(meal.getCreateAt().format(formatter)) // createdAt 날짜 포맷 변환
+                        .updateAt(meal.getUpdateAt().format(formatter)) // updatedAt 날짜 포맷 변환
                         .build());
             }
 
@@ -154,8 +152,8 @@ public class MealServiceImpl implements MealService {
                 .mealName(meal.getMealName())
                 .mealAmount(meal.getMealAmount())
                 .mealDetail(meal.getMealDetail())
-                .createAt(meal.getCreateAt())
-                .updateAt(meal.getUpdateAt())
+                .createAt(meal.getCreateAt().format(formatter))
+                .updateAt(meal.getUpdateAt().format(formatter))
                 .build();
 
         return ResponseEntity.status(200)
