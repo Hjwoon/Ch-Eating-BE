@@ -23,6 +23,8 @@ import java.util.logging.Logger;
 public class MealServiceImpl implements MealService {
     // 날짜 포맷터를 설정 (형식: yyyy-MM-dd)
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
     private final MealRepository mealRepository;
     private final UserRepository userRepository;
 
@@ -111,6 +113,7 @@ public class MealServiceImpl implements MealService {
                         .mealBrand(meal.getMealBrand())
                         .mealDetail(meal.getMealDetail())
                         .createAt(meal.getCreateAt().format(formatter)) // createdAt 날짜 포맷 변환
+                        .createAtTime(meal.getCreateAt().format(timeFormatter)) // createAt 시간 포맷 변환
                         .updateAt(meal.getUpdateAt().format(formatter)) // updatedAt 날짜 포맷 변환
                         .build());
             }
