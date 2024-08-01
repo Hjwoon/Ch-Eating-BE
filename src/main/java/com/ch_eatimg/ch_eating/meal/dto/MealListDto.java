@@ -18,5 +18,6 @@ public class MealListDto {
     private String mealAmount; // 식사량
     private String mealDetail; // 세부사항
     private String createAt; // create-At
+    private String createAtTime; // create-At 시간 부분 추가
     private String updateAt; // update-At
 }
