@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
         int maxAge = (int) (jwtTokenProvider.getRefreshTokenValidityInMilliseconds() / 1000);
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false) // HTTPS를 사용하는 경우
+                .secure(true) // HTTPS를 사용하는 경우
                 .path("/")
                 .maxAge(maxAge)
                 .sameSite("none")
