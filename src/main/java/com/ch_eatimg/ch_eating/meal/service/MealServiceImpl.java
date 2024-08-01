@@ -7,15 +7,21 @@ import com.ch_eatimg.ch_eating.meal.repository.MealRepository;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.transaction.Transactional;
+import lombok.extern.java.Log;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @Service
 public class MealServiceImpl implements MealService {
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final MealRepository mealRepository;
     private final UserRepository userRepository;
 
@@ -84,25 +90,41 @@ public class MealServiceImpl implements MealService {
     }
 
     // 식사량 전체 조회
-    @Override @Transactional
+    @Override
+    @Transactional
     public ResponseEntity<CustomApiResponse<?>> getMeals() {
-        List<Meal> meals = mealRepository.findAll();
+        try {
+            // 모든 식사 데이터를 데이터베이스에서 조회
+            List<Meal> meals = mealRepository.findAll();
 
-        List<MealListDto.MealResponse> mealResponses = new ArrayList<>();
-        for(Meal meal : meals) {
-            Long mealId = meal.getMealId();
-            mealResponses.add(MealListDto.MealResponse.builder()
-                    .mealId(mealId)
-                    .mealName(meal.getMealName())
-                    .mealType(meal.getMealType())
-                    .mealAmount(meal.getMealAmount())
-                    .mealBrand(meal.getMealBrand())
-                    .mealDetail(meal.getMealDetail())
-                    .build());
+            // 날짜 포맷터를 설정 (형식: yyyy-MM-dd)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            // MealResponse DTO 리스트를 초기화
+            List<MealListDto> mealResponses = new ArrayList<>();
+
+            // 각 식사 데이터를 MealResponse DTO로 변환하여 리스트에 추가
+            for (Meal meal : meals) {
+                mealResponses.add(MealListDto.builder()
+                        .mealId(meal.getMealId())
+                        .mealName(meal.getMealName())
+                        .mealType(meal.getMealType())
+                        .mealAmount(meal.getMealAmount())
+                        .mealBrand(meal.getMealBrand())
+                        .mealDetail(meal.getMealDetail())
+                        .createAt(meal.getCreateAt().format(formatter))
+                        .updateAt(meal.getUpdateAt().format(formatter))
+                        .build());
+            }
+
+            // 성공 응답 생성
+            return ResponseEntity.status(200)
+                    .body(CustomApiResponse.createSuccess(200, mealResponses, "식사량 전체 조회에 성공하였습니다."));
+        } catch (Exception e) {
+            // 예외 발생 시 서버 오류 응답 생성
+            return ResponseEntity.status(500)
+                    .body(CustomApiResponse.createFailWithout(500, "서버 오류가 발생했습니다."));
         }
-
-        return ResponseEntity.status(200)
-                .body(CustomApiResponse.createSuccess(200, mealResponses, "식사량 전체 조회에 성공하였습니다."));
     }
 
     // 식사량 수정

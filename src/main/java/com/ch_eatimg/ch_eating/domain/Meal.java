@@ -4,6 +4,8 @@ import com.ch_eatimg.ch_eating.util.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
