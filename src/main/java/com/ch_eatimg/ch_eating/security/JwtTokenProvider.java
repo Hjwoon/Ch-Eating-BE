@@ -116,4 +116,8 @@ public class JwtTokenProvider {
             return false; // Token is invalid
         }
     }
+
+    public long getRefreshTokenValidityInMilliseconds() {
+        return refreshTokenValidityInMilliseconds;
+    }
 }

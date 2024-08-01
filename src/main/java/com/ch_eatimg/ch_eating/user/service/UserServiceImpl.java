@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,10 +81,15 @@ public class UserServiceImpl implements UserService {
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getUserId(), roles);
 
         // 쿠키에 Refresh Token 설정
-        Cookie cookie = new Cookie("refreshToken", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        int maxAge = (int) (jwtTokenProvider.getRefreshTokenValidityInMilliseconds() / 1000);
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+//                .secure(true) // HTTPS를 사용하는 경우
+                .path("/")
+                .maxAge(maxAge)
+                .sameSite("none")
+                .build();
+        response.setHeader("Set-Cookie", cookie.toString());
 
         return CustomApiResponse.createSuccess(
                 HttpStatus.OK.value(),
@@ -91,6 +97,7 @@ public class UserServiceImpl implements UserService {
                 "로그인 성공"
         );
     }
+
 
     @Override
     public UserInfoResDto getUserInfo(HttpServletRequest request) {
