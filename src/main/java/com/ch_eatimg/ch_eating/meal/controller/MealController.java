@@ -24,7 +24,7 @@ public class MealController {
 
     // 삭사량 조회
     @GetMapping("/meals")
-    private ResponseEntity<CustomApiResponse<?>> getMeals() { return mealService.getMeals(); }
+    private ResponseEntity<CustomApiResponse<?>> getMeals(@RequestParam String userId) { return mealService.getMeals(userId); }
 
     // 식사량 수정
     @PutMapping("/{mealId}")
