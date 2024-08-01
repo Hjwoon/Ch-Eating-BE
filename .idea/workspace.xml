@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d968b0c-a9fe-4796-b613-f83ecb370180" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/security/JwtTokenProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/security/JwtTokenProvider.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/user/service/UserServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/ch_eatimg/ch_eating/user/service/UserServiceImpl.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -279,7 +277,8 @@
       <workItem from="1722426693450" duration="637000" />
       <workItem from="1722443066054" duration="9376000" />
       <workItem from="1722499735857" duration="37000" />
-      <workItem from="1722516119789" duration="1157000" />
+      <workItem from="1722516119789" duration="1728000" />
+      <workItem from="1722517892972" duration="255000" />
     </task>
     <servers />
   </component>
