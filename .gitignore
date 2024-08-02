@@ -37,3 +37,4 @@ out/
 .vscode/
 
 ### EC2 ###
+application.properties
