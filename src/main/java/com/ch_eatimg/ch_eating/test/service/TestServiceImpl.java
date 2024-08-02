@@ -149,7 +149,9 @@ public class TestServiceImpl implements TestService {
 
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm"); // 시간 포맷
+            DateTimeFormatter timeFormatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm");// 시간 포맷
+            DateTimeFormatter timeFormatter2 = DateTimeFormatter.ofPattern("HH:mm");// 시간 포맷
+
 
 
             List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfDay, endOfDay).stream()
@@ -159,7 +161,8 @@ public class TestServiceImpl implements TestService {
                             .testName(test.getTestName())
                             .testResult(test.getTestResult())
                             .testWin(test.getTestWin())
-                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter) : null)
+                            .createDate(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter1) : null)
+                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter2) : null)
                             .build())
                     .collect(Collectors.toList());
 
@@ -186,7 +189,8 @@ public class TestServiceImpl implements TestService {
             // 월의 시작과 끝 계산
             LocalDateTime startOfMonth = LocalDateTime.of(year, month, 1, 0, 0);
             LocalDateTime endOfMonth = startOfMonth.withDayOfMonth(startOfMonth.toLocalDate().lengthOfMonth()).with(LocalTime.MAX);
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 시간 포맷
+            DateTimeFormatter timeFormatter1 = DateTimeFormatter.ofPattern("yyyy-MM-dd"); // 시간 포맷
+            DateTimeFormatter timeFormatter2 = DateTimeFormatter.ofPattern("HH:mm"); // 시간 포맷
 
             List<TestResDto> tests = testRepository.findByUserIdAndCreateAtBetween(user, startOfMonth, endOfMonth).stream()
                     .map(test -> TestResDto.builder()
@@ -195,7 +199,8 @@ public class TestServiceImpl implements TestService {
                             .testName(test.getTestName())
                             .testResult(test.getTestResult())
                             .testWin(test.getTestWin())
-                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter) : null)
+                            .createDate(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter1) : null)
+                            .createTime(test.getCreateAt() != null ? test.getCreateAt().format(timeFormatter2) : null)
                             .build())
                     .collect(Collectors.toList());
 

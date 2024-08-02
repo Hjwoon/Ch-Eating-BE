@@ -18,4 +18,5 @@ public class TestResDto {
     private String testResult;
     private String testWin;
     private String createTime;
+    private String createDate;
 }
