@@ -1,16 +1,12 @@
 package com.ch_eatimg.ch_eating.statistics.service;
 
 import com.ch_eatimg.ch_eating.domain.Test;
-import com.ch_eatimg.ch_eating.domain.User;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
 import com.ch_eatimg.ch_eating.statistics.dto.StatisticsMonthlyResponseDto;
 import com.ch_eatimg.ch_eating.statistics.dto.StatisticsResponseDto;
-import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
 import com.ch_eatimg.ch_eating.test.repository.TestRepository;
 import com.ch_eatimg.ch_eating.user.repository.UserRepository;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,12 +35,8 @@ public class StatisticsServiceImpl implements StatisticsService {
     // 주간 조회(요일별로)
     @Override
     @Transactional(readOnly = true)
-    public CustomApiResponse<StatisticsResponseDto> getFakeHungerStatistics(HttpServletRequest request, StatisticsResponseDto dto, String startDate, String endDate) {
+    public CustomApiResponse<StatisticsResponseDto> getFakeHungerStatistics(String userId, String startDate, String endDate) {
         try {
-            // JWT 토큰에서 사용자 ID 추출
-            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
-            User user = userRepository.findByUserId(userId)
-                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             // 시작일과 종료일 파싱
             LocalDate start = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE);
@@ -102,12 +94,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     // 월간 조회(주간별로)
     @Override @Transactional(readOnly = true)
-    public CustomApiResponse<StatisticsMonthlyResponseDto> getFakeHungerStatisticsMonth(HttpServletRequest request, StatisticsMonthlyResponseDto dto, String startDate, String endDate) {
+    public CustomApiResponse<StatisticsMonthlyResponseDto> getFakeHungerStatisticsMonth(String userId, String startDate, String endDate) {
         try {
-            // JWT 토큰에서 사용자 ID 추출
-            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
-            User user = userRepository.findByUserId(userId)
-                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             // 시작일과 종료일 파싱
             LocalDate start = LocalDate.parse(startDate, DateTimeFormatter.ISO_DATE);

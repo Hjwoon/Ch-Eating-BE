@@ -6,9 +6,16 @@ import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface StatisticsService {
-    CustomApiResponse<StatisticsResponseDto> getFakeHungerStatistics(HttpServletRequest request, StatisticsResponseDto dto, String startDate, String endDate);
-    CustomApiResponse<StatisticsMonthlyResponseDto> getFakeHungerStatisticsMonth(HttpServletRequest request, StatisticsMonthlyResponseDto dto, String startDate, String endDate);
 
+    // 주간 조회(요일별로)
+    @Transactional(readOnly = true)
+    CustomApiResponse<StatisticsResponseDto> getFakeHungerStatistics(String userId, String startDate, String endDate);
+
+
+    // 월간 조회(주간별로)
+    @Transactional(readOnly = true)
+    CustomApiResponse<StatisticsMonthlyResponseDto> getFakeHungerStatisticsMonth(String userId, String startDate, String endDate);
 }
