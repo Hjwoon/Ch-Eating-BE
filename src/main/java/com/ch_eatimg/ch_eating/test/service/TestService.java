@@ -1,8 +1,6 @@
 package com.ch_eatimg.ch_eating.test.service;
 
-import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
-import com.ch_eatimg.ch_eating.test.dto.TestResDto;
-import com.ch_eatimg.ch_eating.test.dto.TestStatisticsDto;
+import com.ch_eatimg.ch_eating.test.dto.*;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -17,5 +15,6 @@ public interface TestService {
     CustomApiResponse<List<TestResDto>> getTestsByMonth(HttpServletRequest request, int year, int month);
     CustomApiResponse<TestStatisticsDto> getFakeHungerStatistics(HttpServletRequest request, int year, int month);
     CustomApiResponse<TestStatisticsDto> getFakeHungerStatisticsByDateRange(HttpServletRequest request, LocalDate startDate, LocalDate endDate);
-
+    CustomApiResponse<FakeHungerStatisticsDto> getFakeHungerStatisticsByDate(HttpServletRequest request, LocalDate startDate, LocalDate endDate);
+    CustomApiResponse<DailyHungerStatisticsDto> getDailyHungerStatisticsByDate(HttpServletRequest request, LocalDate startDate, LocalDate endDate);
 }
