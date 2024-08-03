@@ -1,9 +1,6 @@
 package com.ch_eatimg.ch_eating.test.controller;
 
-import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
-import com.ch_eatimg.ch_eating.test.dto.TestResDto;
-import com.ch_eatimg.ch_eating.test.dto.TestStatisticsDto;
-import com.ch_eatimg.ch_eating.test.dto.TestUpdateReqDto;
+import com.ch_eatimg.ch_eating.test.dto.*;
 import com.ch_eatimg.ch_eating.test.service.TestService;
 import com.ch_eatimg.ch_eating.util.response.CustomApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -74,6 +71,24 @@ public class TestController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         CustomApiResponse<TestStatisticsDto> result = testService.getFakeHungerStatisticsByDateRange(request, startDate, endDate);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/statistics/weekly")
+    public ResponseEntity<CustomApiResponse<DailyHungerStatisticsDto>> getDailyHungerStatisticsByDate(
+            HttpServletRequest request,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        CustomApiResponse<DailyHungerStatisticsDto> result = testService.getDailyHungerStatisticsByDate(request, startDate, endDate);
+        return ResponseEntity.status(result.getStatus()).body(result);
+    }
+
+    @GetMapping("/statistics/monthly")
+    public ResponseEntity<CustomApiResponse<FakeHungerStatisticsDto>> getFakeHungerStatisticsByDate(
+            HttpServletRequest request,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        CustomApiResponse<FakeHungerStatisticsDto> result = testService.getFakeHungerStatisticsByDate(request, startDate, endDate);
         return ResponseEntity.status(result.getStatus()).body(result);
     }
 }

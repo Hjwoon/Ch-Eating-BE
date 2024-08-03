@@ -1,9 +1,7 @@
 package com.ch_eatimg.ch_eating.test.service;
 
 import com.ch_eatimg.ch_eating.domain.Test;
-import com.ch_eatimg.ch_eating.test.dto.TestReqDto;
-import com.ch_eatimg.ch_eating.test.dto.TestResDto;
-import com.ch_eatimg.ch_eating.test.dto.TestStatisticsDto;
+import com.ch_eatimg.ch_eating.test.dto.*;
 import com.ch_eatimg.ch_eating.test.repository.TestRepository;
 import com.ch_eatimg.ch_eating.domain.User;
 import com.ch_eatimg.ch_eating.security.JwtTokenProvider;
@@ -18,7 +16,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -324,6 +325,149 @@ public class TestServiceImpl implements TestService {
                     HttpStatus.OK.value(),
                     statistics,
                     "가짜 배고픔 통계 조회 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
+
+    @Override
+    public CustomApiResponse<FakeHungerStatisticsDto> getFakeHungerStatisticsByDate(HttpServletRequest request, LocalDate startDate, LocalDate endDate) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+            List<Test> tests = testRepository.findByUserIdAndCreateAtBetween(user, startDateTime, endDateTime);
+
+            List<FakeHungerStatisticsDto.PeriodStatistic> periodStatistics = new ArrayList<>();
+            List<Integer> totalFakeHungerTimeDistribution = new ArrayList<>(24);
+
+            for (int i = 0; i < 24; i++) {
+                totalFakeHungerTimeDistribution.add(0);
+            }
+
+            LocalDate currentStartDate = startDate;
+            while (!currentStartDate.isAfter(endDate)) {
+                LocalDate currentEndDate = currentStartDate.plusDays(6);
+                if (currentEndDate.isAfter(endDate)) {
+                    currentEndDate = endDate;
+                }
+
+                LocalDateTime currentStartDateTime = currentStartDate.atStartOfDay();
+                LocalDateTime currentEndDateTime = currentEndDate.atTime(LocalTime.MAX);
+
+                List<Test> weekTests = tests.stream()
+                        .filter(test -> test.getCreateAt().isAfter(currentStartDateTime) && test.getCreateAt().isBefore(currentEndDateTime))
+                        .collect(Collectors.toList());
+
+                int totalOccurrences = (int) weekTests.stream()
+                        .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                        .count();
+
+                int totalFailures = (int) weekTests.stream()
+                        .filter(test -> "패배".equals(test.getTestWin()))
+                        .count();
+
+                periodStatistics.add(FakeHungerStatisticsDto.PeriodStatistic.builder()
+                        .date(currentStartDate + " - " + currentEndDate)
+                        .totalFakeHungerOccurrences(totalOccurrences)
+                        .totalFakeHungerFailures(totalFailures)
+                        .build());
+
+                weekTests.stream()
+                        .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                        .forEach(test -> {
+                            int hour = test.getCreateAt().getHour();
+                            totalFakeHungerTimeDistribution.set(hour, totalFakeHungerTimeDistribution.get(hour) + 1);
+                        });
+
+                currentStartDate = currentStartDate.plusWeeks(1);
+            }
+
+            FakeHungerStatisticsDto statistics = FakeHungerStatisticsDto.builder()
+                    .periodStatistics(periodStatistics)
+                    .totalFakeHungerTimeDistribution(totalFakeHungerTimeDistribution)
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    statistics,
+                    "가짜 배고픔 통계 조회 성공"
+            );
+        } catch (Exception e) {
+            return CustomApiResponse.createFailWithout(
+                    HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                    "서버 오류가 발생했습니다: " + e.getMessage()
+            );
+        }
+    }
+
+    @Override
+    public CustomApiResponse<DailyHungerStatisticsDto> getDailyHungerStatisticsByDate(HttpServletRequest request, LocalDate startDate, LocalDate endDate) {
+        try {
+            String userId = jwtTokenProvider.getUsername(jwtTokenProvider.resolveToken(request));
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            LocalDateTime startDateTime = startDate.atStartOfDay();
+            LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+            List<Test> tests = testRepository.findByUserIdAndCreateAtBetween(user, startDateTime, endDateTime);
+
+            List<DailyHungerStatisticsDto.DayStatistic> dayStatistics = new ArrayList<>();
+            List<Integer> totalFakeHungerTimeDistribution = new ArrayList<>(24);
+
+            for (int i = 0; i < 24; i++) {
+                totalFakeHungerTimeDistribution.add(0);
+            }
+
+            Map<LocalDate, List<Test>> testsGroupedByDay = tests.stream()
+                    .collect(Collectors.groupingBy(test -> test.getCreateAt().toLocalDate()));
+
+            for (LocalDate date : startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList())) {
+                List<Test> dayTests = testsGroupedByDay.getOrDefault(date, new ArrayList<>());
+
+                int totalOccurrences = (int) dayTests.stream()
+                        .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                        .count();
+
+                int totalFailures = (int) dayTests.stream()
+                        .filter(test -> "패배".equals(test.getTestWin()))
+                        .count();
+
+                String dayOfWeek = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+
+                dayStatistics.add(DailyHungerStatisticsDto.DayStatistic.builder()
+                        .date(date.toString())
+                        .dayOfWeek(dayOfWeek)
+                        .totalFakeHungerOccurrences(totalOccurrences)
+                        .totalFakeHungerFailures(totalFailures)
+                        .build());
+
+                dayTests.stream()
+                        .filter(test -> "가짜 배고픔".equals(test.getTestResult()))
+                        .forEach(test -> {
+                            int hour = test.getCreateAt().getHour();
+                            totalFakeHungerTimeDistribution.set(hour, totalFakeHungerTimeDistribution.get(hour) + 1);
+                        });
+            }
+
+            DailyHungerStatisticsDto statistics = DailyHungerStatisticsDto.builder()
+                    .periodStatistics(dayStatistics)
+                    .totalFakeHungerTimeDistribution(totalFakeHungerTimeDistribution)
+                    .build();
+
+            return CustomApiResponse.createSuccess(
+                    HttpStatus.OK.value(),
+                    statistics,
+                    "가짜 배고픔 통계 조회에 성공했습니다."
             );
         } catch (Exception e) {
             return CustomApiResponse.createFailWithout(
