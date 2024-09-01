@@ -40,12 +40,12 @@ Efficient backend services for Ch-Eating, handling user authentication, data man
   </a>
 </span>
 <span>
-  <a href="mailto:olivia019182@gmail.com">
+  <a href="mailto:intothexx@gmail.com">
     <img src="https://img.shields.io/badge/Email-random?style=for-the-badge&logo=Gmail&logoColor=white"/>
   </a>
 </span>
 <span>
-  <a href="https://www.instagram.com/khyaejin/">
+  <a href="https://www.instagram.com/7h.05m/">
     <img src="https://img.shields.io/badge/Instagram-random?style=for-the-badge&logo=Instagram&logoColor=white"/>
   </a>
 </span>
